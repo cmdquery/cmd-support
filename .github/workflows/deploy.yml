@@ -24,12 +24,15 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
       - name: Login to DO Container Registry
-        run: doctl registry login --expiry-seconds 600
+        run: doctl registry login --expiry-seconds 3600
 
       - name: Build and push image
-        run: |
-          docker build -f docker/Dockerfile -t ${{ env.IMAGE }}:${{ env.TAG }} .
-          docker push ${{ env.IMAGE }}:${{ env.TAG }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          tags: ${{ env.IMAGE }}:${{ env.TAG }}
 
       - name: Save kubeconfig
         run: doctl kubernetes cluster kubeconfig save ${{ env.CLUSTER }}
