@@ -1,0 +1,42 @@
+name: Build and Deploy to DigitalOcean
+
+on:
+  push:
+    branches:
+      - develop
+
+env:
+  REGISTRY: registry.digitalocean.com/ppd
+  IMAGE: registry.digitalocean.com/ppd/chatwoot
+  TAG: develop
+  CLUSTER: do-nyc1-chatwoot-nyc1
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Login to DO Container Registry
+        run: doctl registry login --expiry-seconds 600
+
+      - name: Build and push image
+        run: |
+          docker build -f docker/Dockerfile -t ${{ env.IMAGE }}:${{ env.TAG }} .
+          docker push ${{ env.IMAGE }}:${{ env.TAG }}
+
+      - name: Save kubeconfig
+        run: doctl kubernetes cluster kubeconfig save ${{ env.CLUSTER }}
+
+      - name: Deploy to k8s
+        run: |
+          kubectl set image deployment/chatwoot-web chatwoot=${{ env.IMAGE }}:${{ env.TAG }} -n chatwoot
+          kubectl set image deployment/chatwoot-worker chatwoot=${{ env.IMAGE }}:${{ env.TAG }} -n chatwoot
+          kubectl rollout status deployment/chatwoot-web -n chatwoot
+          kubectl rollout status deployment/chatwoot-worker -n chatwoot
