@@ -34,6 +34,13 @@ class HookListener < BaseListener
     execute_account_hooks(event, conversation.account, conversation: conversation)
   end
 
+  def conversation_status_changed(event)
+    conversation = extract_conversation_and_account(event)[0]
+    return unless conversation.pending?
+
+    execute_inbox_hooks(event, conversation, conversation: conversation)
+  end
+
   private
 
   def execute_hooks(event, message)
@@ -44,6 +51,15 @@ class HookListener < BaseListener
       next unless supported_hook_event?(hook, event.name)
 
       HookJob.perform_later(hook, event.name, message: message)
+    end
+  end
+
+  def execute_inbox_hooks(event, conversation, event_data = {})
+    conversation.account.hooks.find_each do |hook|
+      next if hook.inbox.present? && hook.inbox != conversation.inbox
+      next unless supported_hook_event?(hook, event.name)
+
+      HookJob.perform_later(hook, event.name, event_data)
     end
   end
 
@@ -59,7 +75,7 @@ class HookListener < BaseListener
     return false if hook.disabled?
 
     supported_events_map = {
-      'slack' => ['message.created'],
+      'slack' => ['message.created', 'conversation.status_changed'],
       'dialogflow' => ['message.created', 'message.updated'],
       'google_translate' => ['message.created'],
       'leadsquared' => ['contact.updated', 'conversation.created', 'conversation.resolved']
