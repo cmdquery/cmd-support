@@ -36,7 +36,7 @@ class HookListener < BaseListener
 
   def conversation_status_changed(event)
     conversation = extract_conversation_and_account(event)[0]
-    return unless conversation.pending?
+    return unless conversation.open?
 
     execute_inbox_hooks(event, conversation, conversation: conversation)
   end

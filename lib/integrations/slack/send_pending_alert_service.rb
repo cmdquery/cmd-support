@@ -2,7 +2,7 @@ class Integrations::Slack::SendPendingAlertService
   pattr_initialize [:conversation!, :hook!]
 
   def perform
-    return unless conversation.pending?
+    return unless conversation.open?
     return if hook.reference_id.blank?
 
     slack_client.chat_postMessage(
@@ -20,7 +20,7 @@ class Integrations::Slack::SendPendingAlertService
   private
 
   def alert_text
-    "*Conversation switched to pending*\n" \
+    "<!channel> *Handover to human needed*\n" \
       "*Inbox:* #{conversation.inbox.name}\n" \
       "*Contact:* #{conversation.contact.name}\n" \
       "<#{conversation_url}|View conversation>"
