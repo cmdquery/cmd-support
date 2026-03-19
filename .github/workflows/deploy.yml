@@ -41,5 +41,5 @@ jobs:
         run: |
           kubectl set image deployment/chatwoot-web chatwoot-web=${{ env.IMAGE }}:${{ env.TAG }} -n chatwoot
           kubectl set image deployment/chatwoot-worker chatwoot-workers=${{ env.IMAGE }}:${{ env.TAG }} -n chatwoot
-          kubectl rollout status deployment/chatwoot-web -n chatwoot
-          kubectl rollout status deployment/chatwoot-worker -n chatwoot
+          kubectl rollout status deployment/chatwoot-web -n chatwoot --timeout=10m
+          kubectl rollout status deployment/chatwoot-worker -n chatwoot --timeout=10m
