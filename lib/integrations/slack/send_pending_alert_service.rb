@@ -20,7 +20,7 @@ class Integrations::Slack::SendPendingAlertService
   private
 
   def alert_text
-    "<!channel> *Handover to human needed*\n" \
+    "<!subteam^S0AMP9N98CW> *Handover to human needed*\n" \
       "*Inbox:* #{conversation.inbox.name}\n" \
       "*Contact:* #{conversation.contact.name}\n" \
       "<#{conversation_url}|View conversation>"
