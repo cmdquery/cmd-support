@@ -9,7 +9,7 @@ env:
   REGISTRY: registry.digitalocean.com/ppd
   IMAGE: registry.digitalocean.com/ppd/chatwoot
   TAG: develop
-  CLUSTER: do-nyc1-chatwoot-nyc1
+  CLUSTER: chatwoot-nyc1
 
 jobs:
   build-and-deploy:
