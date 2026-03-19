@@ -8,7 +8,6 @@ on:
 env:
   REGISTRY: registry.digitalocean.com/ppd
   IMAGE: registry.digitalocean.com/ppd/chatwoot
-  TAG: develop
   CLUSTER: chatwoot-nyc1
 
 jobs:
@@ -32,14 +31,14 @@ jobs:
           context: .
           file: docker/Dockerfile
           push: true
-          tags: ${{ env.IMAGE }}:${{ env.TAG }}
+          tags: ${{ env.IMAGE }}:${{ github.sha }}
 
       - name: Save kubeconfig
         run: doctl kubernetes cluster kubeconfig save ${{ env.CLUSTER }}
 
       - name: Deploy to k8s
         run: |
-          kubectl set image deployment/chatwoot-web chatwoot-web=${{ env.IMAGE }}:${{ env.TAG }} -n chatwoot
-          kubectl set image deployment/chatwoot-worker chatwoot-workers=${{ env.IMAGE }}:${{ env.TAG }} -n chatwoot
+          kubectl set image deployment/chatwoot-web chatwoot-web=${{ env.IMAGE }}:${{ github.sha }} -n chatwoot
+          kubectl set image deployment/chatwoot-worker chatwoot-workers=${{ env.IMAGE }}:${{ github.sha }} -n chatwoot
           kubectl rollout status deployment/chatwoot-web -n chatwoot --timeout=10m
           kubectl rollout status deployment/chatwoot-worker -n chatwoot --timeout=10m
