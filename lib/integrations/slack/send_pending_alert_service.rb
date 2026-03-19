@@ -4,11 +4,13 @@ class Integrations::Slack::SendPendingAlertService
   def perform
     return unless conversation.open?
     return if hook.reference_id.blank?
+    return if conversation.identifier.present?
 
-    slack_client.chat_postMessage(
+    response = slack_client.chat_postMessage(
       channel: hook.reference_id,
       text: alert_text
     )
+    conversation.update!(identifier: response['ts'])
   rescue Slack::Web::Api::Errors::IsArchived, Slack::Web::Api::Errors::AccountInactive, Slack::Web::Api::Errors::MissingScope,
          Slack::Web::Api::Errors::InvalidAuth,
          Slack::Web::Api::Errors::ChannelNotFound, Slack::Web::Api::Errors::NotInChannel => e
